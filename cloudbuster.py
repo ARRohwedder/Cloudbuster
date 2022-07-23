@@ -6,8 +6,12 @@ Created on Wed Oct 28 00:00:28 2020
 @author: Dr. Arndt Rohwedder, University of Huddersfield
 """
 
-import wx
 import os
+if os.name.startswith('nt'):
+    import wx_locale
+import wx
+locale = wx.Locale(iso_code='en_US')
+
 import open3d as o3d
 import numpy as np
 
@@ -22,14 +26,20 @@ import cloudgen
 import o3dcalc
 import saveply
 import o3dext
+import locale
 
-
+locale.setlocale(locale.LC_ALL,'C')
+#print(os.name)
 
 class CbFrame(wx.Frame):    
     def __init__(self, parent, title):
         super(CbFrame, self).__init__(parent, title = title,size = (1000,900))
         self.InitUI()
-        
+    
+    def InitLocale(self):
+        self.ResetLocale()
+
+    
     def InitUI(self):
         
         panel = wx.Panel(self)
@@ -311,10 +321,10 @@ class CbFrame(wx.Frame):
             # present results
             res1 = "Extension of entire cloud:  X = "+partsresvalues[0]+" Y = "+partsresvalues[1]+" Z = "+partsresvalues[2]
             res2 = "Extension of central spheroid:  X = "+partsresvalues[8]+" Y = "+partsresvalues[9]+" Z = "+partsresvalues[10]
-            res3 = "Hint: "+partsresvalues[14]
-            res4 = "Number of separated parts = "+partsresvalues[7]
-            res5 = "Dist. from spheroid: Average = "+partsresvalues[16]+", Median = "+partsresvalues[15]+", Variance = "+partsresvalues[17]
-            res6 = "Dist. from spheroid: Maximum = "+partsresvalues[18]
+            res3 = "Hint: "+partsresvalues[12]
+            res4 = "Number of separated parts = "+partsresvalues[6]
+            res5 = "Dist. from spheroid: Average = "+partsresvalues[14]+", Median = "+partsresvalues[13]+", Variance = "+partsresvalues[15]
+            res6 = "Dist. from spheroid: Maximum = "+partsresvalues[16]
             
             collres = res1 + "\n" + res2 + "\n" + res3 + "\n" + res4 + "\n" + res5 + "\n" + res6
             

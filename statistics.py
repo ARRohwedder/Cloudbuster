@@ -68,6 +68,12 @@ class StatFrame(wx.Frame):
         csvfile.close()
         self.Sphdata = pd.read_csv(Sppath, names=csvarray)
         self.Sphdata = self.Sphdata.iloc[1:]
+        namelist = list(self.Sphdata)
+        dlg = wx.MultiChoiceDialog(self, 'Select parameters to REMOVE','Parameters',namelist)
+        if (dlg.ShowModal() == wx.ID_OK):
+            selections = dlg.GetSelections()
+            self.strings = [namelist[x] for x in selections]
+            #print ("You chose: ", strings)
         
     def OnStart(self, ev):
         
@@ -87,7 +93,11 @@ class StatFrame(wx.Frame):
         ints = self.Sphdata.loc[:, self.Sphdata.dtypes == 'int64']
         seldata = pd.concat([floats, ints], axis=1, join='inner')
         samplenames = self.Sphdata[['File']]
-        del seldata['PixResol']
+        #del seldata['PixResol']
+        for a in range(0,len(self.strings)-1):
+            del seldata[self.strings[a]]
+        
+        
         #del seldata['AMaxZ']
         #del seldata['SPMaxZ']
         

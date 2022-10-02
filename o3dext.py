@@ -13,6 +13,8 @@ import extens
 import ellipsave
 import fitting
 import pandas as pd
+import volumeandsurface
+
 
 class o3dext:
     
@@ -27,7 +29,7 @@ class o3dext:
         
     def o3dextcalc (self):
         
-        extheader = ('ExNumber','Brim','Broad','Narrow','Small','Maxlength','AvMaxlength','Avlength','MaxSurface','AvSurface','AvMedlength','AvVarlength')
+        extheader = ('Ext_Count','Brim','Broad','Narrow','Small','Ext_Max_length','Ext_Av_Max_length','Ext_Av_length','Ext_Surface_sum','Ext_Max_Surface','Ext_Av_Surface','Ext_Max_Vol','Ext_Av_Vol','Ext_Av_Med_length','Ext_Av_Var_length')
         types = ['Brim','Broad','Narrow','Small']
         #outfile = self.resultsfold+self.ofilenames+"_indExt_results.csv"
 
@@ -91,6 +93,7 @@ class o3dext:
         avvect = []
         varvect = []
         maxvect = []
+        volvect = []
         typearray = []
         maxdistarray = []
         
@@ -102,7 +105,9 @@ class o3dext:
                 distance =  testcloud.compute_point_cloud_distance(downpcd)
                 distancearray = np.asarray(distance)
                 
-                size = len(resultlist2)
+                #size = len(resultlist2)
+                volasurf = volumeandsurface.surfandvol(testcloud,self.reso)
+                (size,volume) = volasurf.surfvolcalc()
                 maxdist = np.max(distancearray)
                 avdist = np.average(distancearray)
                 mddist = np.median(distancearray)
@@ -121,7 +126,8 @@ class o3dext:
                 if maxdistextension <= lengthlimit and size < arealimit:
                     classification = types[3]
                 
-                sizevect.append(size*self.reso)
+                sizevect.append(size)
+                volvect.append(volume)
                 maxvect.append(maxdist*self.reso)
                 avvect.append(avdist*self.reso)
                 medvect.append(mddist*self.reso)
@@ -133,13 +139,16 @@ class o3dext:
         if int(partcount) < 1:
             
             size = 0
+            volume = 0
             maxdistextension = 0
             avdist = 0
             mddist = 0
             vardist = 0
             classification = 0
             
-            sizevect.append(size*self.reso)
+            sizevect.append(size)
+            
+            volvect.append(volume)
             maxdistarray.append(maxdistextension*self.reso)
             avvect.append(avdist*self.reso)
             medvect.append(mddist*self.reso)
@@ -166,6 +175,6 @@ class o3dext:
             smallcount = np.where(output1 == 'Small')
             small = output2[smallcount[0][0]]
         
-        vectmedavvar = [str(partcount),str(brim),str(broad),str(narrow),str(small),str(np.max(maxdistarray)),str(np.average(maxdistarray)),str(np.average(avvect)),str(np.max(sizevect)),str(np.average(size)),str(np.average(medvect)),str(np.average(varvect))]
+        vectmedavvar = [str(partcount),str(brim),str(broad),str(narrow),str(small),str(np.max(maxdistarray)),str(np.average(maxdistarray)),str(np.average(avvect)),str(np.sum(sizevect)),str(np.max(sizevect)),str(np.average(sizevect)),str(np.max(volvect)),str(np.average(volvect)),str(np.average(medvect)),str(np.average(varvect))]
 
         return vectmedavvar,extheader

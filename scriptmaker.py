@@ -65,6 +65,7 @@ class StatFrame(wx.Frame):
         wx.MessageBox(text,"Scriptmaker" ,wx.OK | wx.ICON_INFORMATION)
         self.Close()
 
-ex = wx.App() 
-StatFrame(None,'Script Maker') 
-ex.MainLoop()
+def run():
+    ex = wx.App() 
+    StatFrame(None,'Script Maker') 
+    ex.MainLoop()

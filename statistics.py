@@ -211,7 +211,7 @@ class StatFrame(wx.Frame):
         
         text = "PCA : Most relevant (95% of variances) parameters= \n"+pca_topten_txt+"\n\n"+"K-Means Clustering:\n"+str(clusters[1])+" Min. Clusters Identified, Used "+str(clusters[1]+1)+" \n\n"+"Detailed results stored as .csv files and graphs as .svg files in folder: \n"+self.basefolder
         wx.MessageBox(text,"Analysis" ,wx.OK | wx.ICON_INFORMATION)
-        
-ex = wx.App() 
-StatFrame(None,'Data Analysis') 
-ex.MainLoop()
+def run():        
+    ex = wx.App() 
+    StatFrame(None,'Data Analysis') 
+    ex.MainLoop()

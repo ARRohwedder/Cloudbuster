@@ -7,6 +7,7 @@ Created on Thu Nov 26 15:30:04 2020
 """
 
 import wx
+import sys
 
 class Menwin(wx.Frame): 
             
@@ -79,22 +80,27 @@ class Menwin(wx.Frame):
     
    def OnStart1(self, e):
        import cloudbuster
+       cloudbuster.run()
               
    def OnStart2(self, e):
        import masscloud
+       masscloud.run()
               
    def OnStart3(self, e):
        import accumulate
+       accumulate.run()
        
    def OnStart4(self, e):
        import statistics
+       statistics.run()
        
    def OnStart5(self, e):
        import scriptmaker
+       scriptmaker.run()
 
    def OnClose(self, e):
        self.Close()
-       exit()
+       sys.exit()
 
        
 ex = wx.App() 

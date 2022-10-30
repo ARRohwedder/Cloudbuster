@@ -7,10 +7,11 @@ Created on Wed Oct 28 00:00:28 2020
 """
 
 import os
-if os.name.startswith('nt'):
-    import wx_locale
+
 import wx
-locale = wx.Locale(iso_code='en_US')
+#if os.name.startswith('nt'):
+#    import  wx_locale
+#locale = wx.Locale(iso_code='en_US')
 
 import open3d as o3d
 import numpy as np
@@ -150,8 +151,7 @@ class CbFrame(wx.Frame):
 
     def OnQuit(self, e):
         self.Close()
-
-
+              
     def on_press(self, event):
         mittel = os.path.sep
         icondir = self.cbDir+mittel+"icons"+mittel
@@ -349,7 +349,8 @@ class CbFrame(wx.Frame):
             wolke.paint_uniform_color([0.0, 0.0, 0.5])
             ballm.paint_uniform_color([0.0,0.5,0.0])
             o3d.visualization.draw_geometries([wolke, ballm],window_name='Spheroid',width=750,height=750)
+def run():
+    ex = wx.App() 
+    CbFrame(None,'Cloudbuster') 
+    ex.MainLoop()
 
-ex = wx.App() 
-CbFrame(None,'Cloudbuster') 
-ex.MainLoop()

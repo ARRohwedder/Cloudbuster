@@ -45,7 +45,7 @@ class AccFrame(wx.Frame):
 
         wx.MessageBox(text,"Result Accumulation" ,wx.OK | wx.ICON_INFORMATION)
         self.Close()
-    
-ex = wx.App() 
-AccFrame(None,'Accumulate') 
-ex.MainLoop()
+def run():    
+    ex = wx.App() 
+    AccFrame(None,'Accumulate') 
+    ex.MainLoop()

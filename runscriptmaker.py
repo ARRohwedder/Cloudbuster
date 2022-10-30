@@ -1,0 +1,2 @@
+import scriptmaker
+scriptmaker.run()

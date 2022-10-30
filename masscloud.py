@@ -171,7 +171,7 @@ class Masswin(wx.Frame):
           wx.Yield()
       wx.MessageBox("Process finished","MassCloud" ,wx.OK | wx.ICON_INFORMATION)
       self.Close()
-				
-ex = wx.App() 
-Masswin(None,'Cloudburst') 
-ex.MainLoop()
+def run():				
+   ex = wx.App() 
+   Masswin(None,'Cloudburst') 
+   ex.MainLoop()

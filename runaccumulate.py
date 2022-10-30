@@ -1,0 +1,2 @@
+import accumulate
+accumulate.run()

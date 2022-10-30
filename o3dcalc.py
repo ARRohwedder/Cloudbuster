@@ -27,6 +27,7 @@ class o3dcalc:
     def o3dcalcul (self):
         #resheader = ("AMaxX","AMaxY","AMaxZ","ARatYX","ARatYZ","ARatXZ","A_Hint","Sep_Comp","SpMaxX","SPMaxY","SPMaxZ","SPRatYX","SPRatYZ","SPRatXZ","Sp_Hint","MedCl_Dist","AvCl_Dist","VarCl_Dist","MaxCl_Dist","PixResol")
         resheader = ("PCL_max_x_size","PCL_max_y_size","PCL_ratio_YX_size","PCL_ratio_YZ_size","PCL_ratio_XZ_size","PCL_shape_hint","Sep_Comp_Count","Spheroid_rotation_X","Spheroid_rotation_Y","Spheroid_rotation_Z","Spheroid_max_x_size","Spheroid_max_y_size","Spheroid_ratio_YX_size","Spheroid_ratio_YZ_size","Spheroid_ratio_XZ_size","Spheroid_surface_area","Spheroid_Volume","Spheroid_shape_hint","Med_Dist_Sph_to_Frag","Av_Dist_Sph_to_Frag","Var_Dist_Sph_to_Frag","Max_Dist_Sph_to_Frag","Med_Surf_of_Frag","Av_Surf_of_Frag","Var_Surf_of_Frag","Max_Surf_of_Frag","Med_Vol_of_Frag","Av_Vol_of_Frag","Var_Vol_of_Frag","Max_Vol_of_Frag","PixResol")
+        #                  0              1                   2                 3                   4                  5                 6                    7                       8                    9                    10                      11                 12                       13                           14                     15                      16                17                  18                          19                  20                 21                        22                23               24                  25                26                27                  28            29              30      
         indheader = "no,size(surf),distance,\n"
         resultcoll = []
         cloud = io.read_point_cloud(self.plyfile)
@@ -114,6 +115,8 @@ class o3dcalc:
                 size = indsurf
                 if (distancearray.mean()) > 1:
                     distvectors.append(distancearray.mean())
+                    surfacevectors.append(surfarray.mean())
+                    volumevectors.append(volarray.mean())
 
                 line = str(gross)+","+str(size)+","+str(np.average(distancearray))+"\n"
                 resfile.writelines(line)
@@ -123,15 +126,18 @@ class o3dcalc:
             varvect = np.var(distvectors)
             maxvect = np.max(distvectors)
             
-            indsurfmed = np.median(surfarray)
-            indsurfav = np.average(surfarray)
-            indsurfvar = np.var(surfarray)
-            indsurfmax = np.max(surfarray)
+            #indsurfmed = np.median(surfarray)
+            indsurfmed = np.median(surfacevectors)
+            indsurfav = np.average(surfacevectors)
+            print ("indav =",indsurfav)
+            indsurfvar = np.var(surfacevectors)
+            print ("indvar =",indsurfvar)
+            indsurfmax = np.max(surfacevectors)
             
-            indvolmed = np.median(volarray)
-            indvolav = np.average(volarray)
-            indvolvar = np.var(volarray)
-            indvolmax = np.max(volarray)
+            indvolmed = np.median(volumevectors)
+            indvolav = np.average(volumevectors)
+            indvolvar = np.var(volumevectors)
+            indvolmax = np.max(volumevectors)
             
 
         vectmedavvar = [medvect,avvect,varvect,maxvect]

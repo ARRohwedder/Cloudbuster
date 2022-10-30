@@ -1,0 +1,2 @@
+import masscloud
+masscloud.run()

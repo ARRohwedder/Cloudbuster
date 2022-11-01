@@ -10,7 +10,7 @@ import scipy.cluster.hierarchy as sc
 import numpy as np
 
 class figplot:
-    def __init__(self,figone,corrtrans,cornames,samcorr,samname,dendr,km,folder,count):
+    def __init__(self,figone,corrtrans,cornames,samcorr,samname,dendr,km,folder,count,dcount):
         self.pcaplot = figone
         self.correl = corrtrans
         self.topnames = cornames
@@ -20,6 +20,7 @@ class figplot:
         self.pcacount = count
         self.samplecorr = samcorr
         self.samplename = samname
+        self.datacount = dcount
         
     def FigPlot (self):
         
@@ -57,28 +58,29 @@ class figplot:
         
         
         # Hierarchical Clustering
-        figc, axc = plt.subplots(figsize=(8, 10))
+        if self.datacount > 10:
+            figc, axc = plt.subplots(figsize=(8, 10))
         
-        plt.title('Hierarchical Clustering', fontsize=16);
-        axc = sc.dendrogram(sc.linkage(self.firstdat, method='ward'),orientation='right', leaf_font_size=2)
-        hierfig = self.basefolder+"Hiercluster.svg"
-        plt.savefig(hierfig)
+            plt.title('Hierarchical Clustering', fontsize=16);
+            axc = sc.dendrogram(sc.linkage(self.firstdat, method='ward'),orientation='right', leaf_font_size=2)
+            hierfig = self.basefolder+"Hiercluster.svg"
+            plt.savefig(hierfig)
         
         # K-Means Clustering
-        cols = self.kmdf.columns
+            cols = self.kmdf.columns
         #print(cols)
-        u_labels = np.unique(self.kmdf['clusters'])
-        filtered_data = []
-        figd, axd = plt.subplots()
-        plt.title('K-Means Clustering', fontsize=16);
-        for i in u_labels:
-            filtered_data = self.kmdf[self.kmdf['clusters'] == i]
-            axd = plt.scatter(filtered_data[cols[0]] ,filtered_data[cols[1]],label="Cluster "+str(i),s = 8)
-            axd = plt.legend()
+            u_labels = np.unique(self.kmdf['clusters'])
             filtered_data = []
+            figd, axd = plt.subplots()
+            plt.title('K-Means Clustering', fontsize=16);
+            for i in u_labels:
+                filtered_data = self.kmdf[self.kmdf['clusters'] == i]
+                axd = plt.scatter(filtered_data[cols[0]] ,filtered_data[cols[1]],label="Cluster "+str(i),s = 8)
+                axd = plt.legend()
+                filtered_data = []
         
-        kfig = self.basefolder+"kmeanscluster.svg"
-        plt.savefig(kfig)
-        plt.show()     
+            kfig = self.basefolder+"kmeanscluster.svg"
+            plt.savefig(kfig)
+            plt.show()     
         
         

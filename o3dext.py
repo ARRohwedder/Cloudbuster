@@ -72,7 +72,8 @@ class o3dext:
 
 
         #isolate compartments and find distance 05.06.2021
-        labels = np.array(extpc.cluster_dbscan(eps=10, min_points=10, print_progress=False))
+        #labels = np.array(extpc.cluster_dbscan(eps=10, min_points=10, print_progress=False))
+        labels = np.array(extpc.cluster_dbscan(eps=10, min_points=100, print_progress=False))
         max_label = labels.max()
         partcount = max_label + 1
         

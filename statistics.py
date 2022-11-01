@@ -37,7 +37,7 @@ class StatFrame(wx.Frame):
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         
-        self.sphbutton = wx.Button(panel, label = "Open Results Folder")
+        self.sphbutton = wx.Button(panel, label = "Open Results File")
         self.startbutton = wx.Button(panel, label = "Start calculation")
         
         self.Bind(wx.EVT_BUTTON, self.OnSpheroid, self.sphbutton)
@@ -58,9 +58,11 @@ class StatFrame(wx.Frame):
         
     def OnSpheroid(self, ev):
 
-        self.dirname = wx.DirSelector("Choose a folder to open")
-        Sppath = self.dirname+self.mittel+"acc_results.csv"
-        self.basefolder = self.dirname+self.mittel
+        Sppath = wx.FileSelector("Choose a file to open")
+        mittel = os.path.sep
+        getrennt = Sppath.split(mittel)
+        zwischen = getrennt[len(getrennt)-1]
+        self.basefolder = Sppath.replace(zwischen,"")
         csvfile = open(Sppath,'r')
         csvzeilen = csvfile.readline()
         csvarray = csvzeilen.split(',')
@@ -69,14 +71,24 @@ class StatFrame(wx.Frame):
         self.Sphdata = pd.read_csv(Sppath, names=csvarray)
         self.Sphdata = self.Sphdata.iloc[1:]
         namelist = list(self.Sphdata)
+        
+        dlg1 = wx.MultiChoiceDialog(self, 'Select parameter for sample names','Parameters',namelist)
+        if (dlg1.ShowModal() == wx.ID_OK):
+            selections = dlg1.GetSelections()
+            self.strings1 = [namelist[x] for x in selections]
+            #print ("You chose: ", self.strings1)
         dlg = wx.MultiChoiceDialog(self, 'Select parameters to REMOVE','Parameters',namelist)
         if (dlg.ShowModal() == wx.ID_OK):
             selections = dlg.GetSelections()
             self.strings = [namelist[x] for x in selections]
-            #print ("You chose: ", strings)
+            #print ("You chose: ", self.strings)
         
     def OnStart(self, ev):
         
+        
+        for a in range(0,len(self.strings)-1):
+            del self.Sphdata[self.strings[a]]
+            
         emp_lis = []
         for z in range(1,self.Sphdata.shape[1]):
             wert = self.Sphdata.iat[1,z]
@@ -92,16 +104,12 @@ class StatFrame(wx.Frame):
         floats = self.Sphdata.loc[:, self.Sphdata.dtypes == 'float64']
         ints = self.Sphdata.loc[:, self.Sphdata.dtypes == 'int64']
         seldata = pd.concat([floats, ints], axis=1, join='inner')
-        samplenames = self.Sphdata[['File']]
-        #del seldata['PixResol']
-        for a in range(0,len(self.strings)-1):
-            del seldata[self.strings[a]]
+        #print (seldata," type ",type(seldata))
+        #print ("size =", seldata.shape)
+        datacount = seldata.shape[0]
         
+        samplenames = self.Sphdata[[self.strings1[0]]]
         
-        #del seldata['AMaxZ']
-        #del seldata['SPMaxZ']
-        
-       
         #PCA
         
         selarray = seldata.values
@@ -176,40 +184,47 @@ class StatFrame(wx.Frame):
     
         samplecorr = new_rotated.corr(method='pearson')
         
-        #Hierarchical Clustering
-        toptennames = pca_topten
-        first = pos_df.to_numpy()
-        second = neg_df.to_numpy()
-        count=np.arange(0,first.size)
-        dend = pd.DataFrame({'index': count,'First': first}, columns=['index','First'])
-        hiera = hierclu.HierClu(dend)
-        hierc = hiera.hiercalc()
-        hierdf = pd.DataFrame(samplenames)
-        hierdf.insert(1,'CluOrder',hierc,True)
-        hiername = self.basefolder+"Hier_Clu.csv"
-        hierdf.to_csv(hiername)
+        if datacount > 10:
+            #Hierarchical Clustering
+            toptennames = pca_topten
+            first = pos_df.to_numpy()
+            second = neg_df.to_numpy()
+            count=np.arange(0,first.size)
+            dend = pd.DataFrame({'index': count,'First': first}, columns=['index','First'])
+            hiera = hierclu.HierClu(dend)
+            hierc = hiera.hiercalc()
+            hierdf = pd.DataFrame(samplenames)
+            hierdf.insert(1,'CluOrder',hierc,True)
+            hiername = self.basefolder+"Hier_Clu.csv"
+            hierdf.to_csv(hiername)
         
-        #K-means clustering
-        kmdf = pd.DataFrame({'First': first,'Second': second}, columns=['First','Second'])
-        kmdfarray = np.asarray(kmdf)
-        kmdf_scalar = StandardScaler().fit(kmdfarray)
-        kmdf_rescaled = kmdf_scalar.transform(kmdfarray)
-        kminit = kmeans.myKMeans(kmdf_rescaled)
-        clusters = kminit.KMeanscalc()
-        kmdf_complete = pd.DataFrame(kmdf_rescaled,columns=[toptennames[0],toptennames[1]])
-        kmdf_complete.insert(2,'clusters',clusters[0],True)
-        kmoutdf = self.Sphdata[['File']]
-        kmoutdf.insert(1,'clusters',clusters[0],True)
-        kmdf_name = self.basefolder+"K_Means_clu.csv"
-        kmoutdf.to_csv(kmdf_name)
-        kmdf_name = self.basefolder+"K_means_raw.csv"
-        kmdf_complete.to_csv(kmdf_name)
+            #K-means clustering
+            kmdf = pd.DataFrame({'First': first,'Second': second}, columns=['First','Second'])
+            kmdfarray = np.asarray(kmdf)
+            kmdf_scalar = StandardScaler().fit(kmdfarray)
+            kmdf_rescaled = kmdf_scalar.transform(kmdfarray)
+            kminit = kmeans.myKMeans(kmdf_rescaled)
+            clusters = kminit.KMeanscalc()
+            kmdf_complete = pd.DataFrame(kmdf_rescaled,columns=[toptennames[0],toptennames[1]])
+            kmdf_complete.insert(2,'clusters',clusters[0],True)
+            kmoutdf = self.Sphdata[['File']]
+            kmoutdf.insert(1,'clusters',clusters[0],True)
+            kmdf_name = self.basefolder+"K_Means_clu.csv"
+            kmoutdf.to_csv(kmdf_name)
+            kmdf_name = self.basefolder+"K_means_raw.csv"
+            kmdf_complete.to_csv(kmdf_name)
         
         #plotting
-        plotting = figplot.figplot(pcares[2],pcacor,pca_topten,samplecorr,grouparray,dend,kmdf_complete,self.basefolder,len(pca_topten))
+        if datacount > 10:
+            plotting = figplot.figplot(pcares[2],pcacor,pca_topten,samplecorr,grouparray,dend,kmdf_complete,self.basefolder,len(pca_topten),datacount)
+        if datacount <= 10:
+            plotting = figplot.figplot(pcares[2],pcacor,pca_topten,samplecorr,grouparray,samplecorr,samplecorr,self.basefolder,len(pca_topten),datacount)
         plotting.FigPlot()
         
-        text = "PCA : Most relevant (95% of variances) parameters= \n"+pca_topten_txt+"\n\n"+"K-Means Clustering:\n"+str(clusters[1])+" Min. Clusters Identified, Used "+str(clusters[1]+1)+" \n\n"+"Detailed results stored as .csv files and graphs as .svg files in folder: \n"+self.basefolder
+        if datacount > 10:
+            text = "PCA : Most relevant (95% of variances) parameters= \n"+pca_topten_txt+"\n\n"+"K-Means Clustering:\n"+str(clusters[1])+" Min. Clusters Identified, Used "+str(clusters[1]+1)+" \n\n"+"Detailed results stored as .csv files and graphs as .svg files in folder: \n"+self.basefolder
+        if datacount <= 10:
+            text = "PCA : Most relevant (95% of variances) parameters= \n"+pca_topten_txt+"\n\n"+" \n\n"+"Detailed results stored as .csv files and graphs as .svg files in folder: \n"+self.basefolder
         wx.MessageBox(text,"Analysis" ,wx.OK | wx.ICON_INFORMATION)
 def run():        
     ex = wx.App() 

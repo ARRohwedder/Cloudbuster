@@ -13,7 +13,7 @@ import extens
 import ellipsave
 import fitting
 import pandas as pd
-import volumeandsurface
+import extvolumeandsurface
 
 
 class o3dext:
@@ -29,7 +29,8 @@ class o3dext:
         
     def o3dextcalc (self):
         
-        extheader = ('Ext_Count','Brim','Broad','Narrow','Small','Ext_Max_length','Ext_Av_Max_length','Ext_Av_length','Ext_Surface_sum','Ext_Max_Surface','Ext_Av_Surface','Ext_Max_Vol','Ext_Av_Vol','Ext_Av_Med_length','Ext_Av_Var_length')
+        #extheader = ('Ext_Count','Brim','Broad','Narrow','Small','Ext_Max_length','Ext_Av_Max_length','Ext_Av_length','Ext_Surface_sum','Ext_Max_Surface','Ext_Av_Surface','Ext_Max_Vol','Ext_Av_Vol','Ext_Av_Med_length','Ext_Av_Var_length')
+        extheader = ('Ext_Count','Brim','Broad','Narrow','Small','Ext_Max_length','Ext_Av_Max_length','Ext_Av_length','Ext_Surface_sum','Ext_Max_Surface','Ext_Av_Surface','Ext_Av_Med_length','Ext_Av_Var_length')
         types = ['Brim','Broad','Narrow','Small']
         #outfile = self.resultsfold+self.ofilenames+"_indExt_results.csv"
 
@@ -59,7 +60,7 @@ class o3dext:
         downpcd = ellippc.voxel_down_sample(voxel_size=0.5)
         
         #build extensions
-        makeextens = extens.extens(smartidata,cloudarray)
+        makeextens = extens.extens(smartidata,cloudarray,ellipsoid)
         extarray = makeextens.extensions()
         extpc = geometry.PointCloud()
         extpc.points = utility.Vector3dVector(extarray[0])
@@ -72,10 +73,16 @@ class o3dext:
 
 
         #isolate compartments and find distance 05.06.2021
-        #labels = np.array(extpc.cluster_dbscan(eps=10, min_points=10, print_progress=False))
         labels = np.array(extpc.cluster_dbscan(eps=10, min_points=100, print_progress=False))
-        max_label = labels.max()
-        partcount = max_label + 1
+        #labels = np.array(extpc.cluster_dbscan(eps=2*self.reso, min_points=10, print_progress=False))
+        max_label = 0
+        partcount = 0
+        if labels != () : 
+            max_label = labels.max()
+            partcount = max_label + 1
+        
+            
+        
         
         elliparray = np.asarray(ellippc.points)
         elliparraysize = elliparray.shape[0]
@@ -94,21 +101,19 @@ class o3dext:
         avvect = []
         varvect = []
         maxvect = []
-        volvect = []
+        #volvect = []
         typearray = []
         maxdistarray = []
         
         if int(partcount) >= 1:
-            for gross in list(range(max_label + 1)):
+            for gross in list(range(max_label+1)):
                 results2 = np.where(labels == gross)
                 resultlist2 = list(results2[0])
                 testcloud = extpc.select_by_index(resultlist2)
                 distance =  testcloud.compute_point_cloud_distance(downpcd)
                 distancearray = np.asarray(distance)
-                
-                #size = len(resultlist2)
-                volasurf = volumeandsurface.surfandvol(testcloud,self.reso)
-                (size,volume) = volasurf.surfvolcalc()
+                volasurf = extvolumeandsurface.surfandvol(testcloud,self.reso)
+                size = volasurf.surfvolcalc()
                 maxdist = np.max(distancearray)
                 avdist = np.average(distancearray)
                 mddist = np.median(distancearray)
@@ -128,19 +133,20 @@ class o3dext:
                     classification = types[3]
                 
                 sizevect.append(size)
-                volvect.append(volume)
+                #volvect.append(volume)
                 maxvect.append(maxdist*self.reso)
                 avvect.append(avdist*self.reso)
                 medvect.append(mddist*self.reso)
                 varvect.append(vardist*self.reso)
                 maxdistarray.append(maxdistextension*self.reso)
                 typearray.append(classification)
-           
+                
+                          
         
         if int(partcount) < 1:
             
             size = 0
-            volume = 0
+            #volume = 0
             maxdistextension = 0
             avdist = 0
             mddist = 0
@@ -149,7 +155,7 @@ class o3dext:
             
             sizevect.append(size)
             
-            volvect.append(volume)
+            #volvect.append(volume)
             maxdistarray.append(maxdistextension*self.reso)
             avvect.append(avdist*self.reso)
             medvect.append(mddist*self.reso)
@@ -158,8 +164,6 @@ class o3dext:
         
         
         extpddataframe = pd.DataFrame({'Size': sizevect,'Maxlength': maxdistarray, 'Avlength' : avvect, 'Medlength':medvect,'Varlength': varvect,'Type': typearray}, columns=['Size','Maxlength','Avlength','Medlength', 'Varlength','Type'])
-        #extpddataframe.to_csv(outfile)
-        
         output1 = np.array(extpddataframe['Type'].value_counts().index)
         output2 = extpddataframe['Type'].value_counts().values
         
@@ -176,6 +180,6 @@ class o3dext:
             smallcount = np.where(output1 == 'Small')
             small = output2[smallcount[0][0]]
         
-        vectmedavvar = [str(partcount),str(brim),str(broad),str(narrow),str(small),str(np.max(maxdistarray)),str(np.average(maxdistarray)),str(np.average(avvect)),str(np.sum(sizevect)),str(np.max(sizevect)),str(np.average(sizevect)),str(np.max(volvect)),str(np.average(volvect)),str(np.average(medvect)),str(np.average(varvect))]
-
+        #vectmedavvar = [str(partcount),str(brim),str(broad),str(narrow),str(small),str(np.max(maxdistarray)),str(np.average(maxdistarray)),str(np.average(avvect)),str(np.sum(sizevect)),str(np.max(sizevect)),str(np.average(sizevect)),str(np.max(volvect)),str(np.average(volvect)),str(np.average(medvect)),str(np.average(varvect))]
+        vectmedavvar = [str(partcount),str(brim),str(broad),str(narrow),str(small),str(np.max(maxdistarray)),str(np.average(maxdistarray)),str(np.average(avvect)),str(np.sum(sizevect)),str(np.max(sizevect)),str(np.average(sizevect)),str(np.average(medvect)),str(np.average(varvect))]
         return vectmedavvar,extheader

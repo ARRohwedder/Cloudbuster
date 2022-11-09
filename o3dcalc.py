@@ -32,11 +32,13 @@ class o3dcalc:
         resultcoll = []
         cloud = io.read_point_cloud(self.plyfile)
         wolkenform = cloud.get_max_bound()
+        #print ("o3dcalc 1")
         volasurf = volumeandsurface.surfandvol(cloud,self.reso)
         (surface,volume) = volasurf.surfvolcalc()
         
         #isolate compartments and find largest 30.05.2021
-        labels = np.array(cloud.cluster_dbscan(eps=10, min_points=10, print_progress=False))
+        #labels = np.array(cloud.cluster_dbscan(eps=10, min_points=10, print_progress=False))
+        labels = np.array(cloud.cluster_dbscan(eps=2*self.reso, min_points=10, print_progress=False))
         max_label = labels.max()
         laenger = 0
         labpos = 0
@@ -84,15 +86,15 @@ class o3dcalc:
         varvect = 0
         maxvect = 0
         
-        surfmed = 0
-        surfav = 0
-        surfvar = 0
-        surfmax = 0
+        indsurfmed = 0
+        indsurfav = 0
+        indsurfvar = 0
+        indsurfmax = 0
         
-        volmed = 0
-        volav = 0
-        volvar = 0
-        volmax = 0
+        indvolmed = 0
+        indvolav = 0
+        indvolvar = 0
+        indvolmax = 0
         
         if int(partcount) > 1:
             outfile = self.resultsfold+self.ofilenames+"_ind_parts_results.csv"
@@ -101,7 +103,6 @@ class o3dcalc:
             for gross in list(range(max_label + 1)):
                 results2 = np.where(labels == gross)
                 resultlist2 = list(results2[0])
-                #lang = len(resultlist2)
                 testcloud = cloud.select_by_index(resultlist2)
                 distance =  bigcloud1.compute_point_cloud_distance(testcloud)
                 distancearray = np.asarray(distance)
@@ -126,12 +127,9 @@ class o3dcalc:
             varvect = np.var(distvectors)
             maxvect = np.max(distvectors)
             
-            #indsurfmed = np.median(surfarray)
             indsurfmed = np.median(surfacevectors)
             indsurfav = np.average(surfacevectors)
-            print ("indav =",indsurfav)
             indsurfvar = np.var(surfacevectors)
-            print ("indvar =",indsurfvar)
             indsurfmax = np.max(surfacevectors)
             
             indvolmed = np.median(volumevectors)

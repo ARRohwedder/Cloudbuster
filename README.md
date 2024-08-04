@@ -49,10 +49,6 @@ PCA:
 Follow the installation instructions under https://pypi.org/project/pca/
 pip3 install pca
 
-Kneed:
-Follow the installation instructions under https://pypi.org/project/kneed/
-pip3 install kneed
-
 Pandas:
 Follow the installation instructions under https://pypi.org/project/pandas/
 pip3 install pandas
